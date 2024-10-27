@@ -1,8 +1,17 @@
-const preguntas = [];
+const preguntasPorTema = {
+    1: { cantidad: 4, preguntas: [] },
+    2: { cantidad: 3, preguntas: [] },
+    3: { cantidad: 3, preguntas: [] },
+    4: { cantidad: 4, preguntas: [] },
+    5: { cantidad: 3, preguntas: [] },
+    6: { cantidad: 3, preguntas: [] },
+    7: { cantidad: 4, preguntas: [] }
+};
+
 const quizContainer = document.getElementById('quiz-container');
 
 function cargarPreguntas() {
-    fetch('preguntas.txt') // Ruta del archivo
+    fetch('preguntas.txt')
         .then(response => {
             if (!response.ok) {
                 throw new Error("No se pudo cargar el archivo de preguntas.");
@@ -13,40 +22,42 @@ function cargarPreguntas() {
             if (!text) {
                 throw new Error("El archivo de preguntas está vacío o no se cargó correctamente.");
             }
-           
-            // Dividir el contenido en líneas
-            const lineas = text.trim().split('\n');
-           
-            // Procesar cada línea
-            lineas.forEach(linea => {
-                // Dividir cada línea en partes usando '|' como separador
-                const partes = linea.split('|');
-               
-                if (partes.length < 6) {
-                    console.error("Formato incorrecto en la línea:", linea);
-                    return;
-                }
 
-                const id = partes[0].trim();
-                const preguntaTexto = partes[1].trim();
-                const opciones = [
-                    partes[2].trim(), // A) Opción 1
-                    partes[3].trim(), // B) Opción 2
-                    partes[4].trim()  // C) Opción 3
-                ];
-                const respuestaCorrecta = partes[5].trim(); // Respuesta correcta (e.g., "A")
-               
-                const pregunta = {
-                    id: id,
-                    texto: preguntaTexto,
-                    opciones: opciones,
-                    respuestaCorrecta: respuestaCorrecta
-                };
-               
-                preguntas.push(pregunta);
+            const lineas = text.trim().split('\n');
+            let temaActual = null;
+
+            lineas.forEach(linea => {
+                // Detectar el inicio de un tema
+                if (linea.startsWith('# Tema')) {
+                    const temaMatch = linea.match(/# Tema (\d+)/);
+                    if (temaMatch) {
+                        temaActual = parseInt(temaMatch[1]);
+                    }
+                } else if (temaActual && preguntasPorTema[temaActual]) {
+                    // Procesar las preguntas solo si el tema es válido
+                    const partes = linea.split('|');
+                   
+                    if (partes.length < 6) {
+                        console.error("Formato incorrecto en la línea:", linea);
+                        return;
+                    }
+
+                    const pregunta = {
+                        id: partes[0].trim(),
+                        texto: partes[1].trim(),
+                        opciones: [
+                            partes[2].trim(), // A) Opción 1
+                            partes[3].trim(), // B) Opción 2
+                            partes[4].trim()  // C) Opción 3
+                        ],
+                        respuestaCorrecta: partes[5].trim()
+                    };
+
+                    preguntasPorTema[temaActual].preguntas.push(pregunta);
+                }
             });
-           
-            // Llamar a la función para mostrar las preguntas
+
+            seleccionarPreguntasAleatorias();
             mostrarPreguntas();
         })
         .catch(error => {
@@ -55,54 +66,113 @@ function cargarPreguntas() {
         });
 }
 
+function seleccionarPreguntasAleatorias() {
+    Object.keys(preguntasPorTema).forEach(tema => {
+        const temaData = preguntasPorTema[tema];
+        const { preguntas, cantidad } = temaData;
+       
+        if (preguntas.length >= cantidad) {
+            // Seleccionar `cantidad` de preguntas aleatorias del tema
+            temaData.preguntasSeleccionadas = [];
+            const indicesSeleccionados = new Set();
+           
+            while (indicesSeleccionados.size < cantidad) {
+                const index = Math.floor(Math.random() * preguntas.length);
+                if (!indicesSeleccionados.has(index)) {
+                    indicesSeleccionados.add(index);
+                    temaData.preguntasSeleccionadas.push(preguntas[index]);
+                }
+            }
+        } else {
+            console.warn(`No hay suficientes preguntas en el tema ${tema}.`);
+            temaData.preguntasSeleccionadas = preguntas;
+        }
+    });
+}
+
 function mostrarPreguntas() {
-    preguntas.forEach((pregunta, index) => {
-        const preguntaDiv = document.createElement('div');
-        preguntaDiv.classList.add('question');
-       
-        // Añadir el texto de la pregunta
-        const preguntaTexto = document.createElement('p');
-        preguntaTexto.textContent = `${index + 1}. ${pregunta.texto}`;
-        preguntaDiv.appendChild(preguntaTexto);
-       
-        // Añadir las opciones como botones de radio
-        pregunta.opciones.forEach((opcion, i) => {
-            const opcionLabel = document.createElement('label');
-            const opcionInput = document.createElement('input');
-            opcionInput.type = 'radio';
-            opcionInput.name = `pregunta${index}`;
-            opcionInput.value = String.fromCharCode(65 + i); // Convertir 0 -> A, 1 -> B, 2 -> C
-            opcionLabel.appendChild(opcionInput);
-            opcionLabel.appendChild(document.createTextNode(opcion));
-            preguntaDiv.appendChild(opcionLabel);
-            preguntaDiv.appendChild(document.createElement('br'));
+    Object.values(preguntasPorTema).forEach(temaData => {
+        temaData.preguntasSeleccionadas.forEach((pregunta, index) => {
+            const preguntaDiv = document.createElement('div');
+            preguntaDiv.classList.add('question');
+           
+            const preguntaTexto = document.createElement('p');
+            preguntaTexto.textContent = `${pregunta.id}. ${pregunta.texto}`;
+            preguntaDiv.appendChild(preguntaTexto);
+
+            pregunta.opciones.forEach((opcion, i) => {
+                const opcionLabel = document.createElement('label');
+                const opcionInput = document.createElement('input');
+                opcionInput.type = 'radio';
+                opcionInput.name = `pregunta${pregunta.id}`;
+                opcionInput.value = String.fromCharCode(65 + i); // Convertir 0 -> A, 1 -> B, 2 -> C
+                opcionLabel.appendChild(opcionInput);
+                opcionLabel.appendChild(document.createTextNode(opcion));
+                preguntaDiv.appendChild(opcionLabel);
+                preguntaDiv.appendChild(document.createElement('br'));
+            });
+           
+            quizContainer.appendChild(preguntaDiv);
         });
-       
-        quizContainer.appendChild(preguntaDiv);
     });
 }
 
 function verificarRespuestas() {
     let correctas = 0;
-   
-    preguntas.forEach((pregunta, index) => {
-        const opciones = document.getElementsByName(`pregunta${index}`);
-        let respuestaSeleccionada = null;
-       
-        opciones.forEach(opcion => {
-            if (opcion.checked) {
-                respuestaSeleccionada = opcion.value;
+    const incorrectas = [];
+
+    Object.values(preguntasPorTema).forEach(temaData => {
+        temaData.preguntasSeleccionadas.forEach(pregunta => {
+            const opciones = document.getElementsByName(`pregunta${pregunta.id}`);
+            let respuestaSeleccionada = null;
+
+            opciones.forEach(opcion => {
+                if (opcion.checked) {
+                    respuestaSeleccionada = opcion.value;
+                }
+            });
+
+            if (respuestaSeleccionada === pregunta.respuestaCorrecta) {
+                correctas++;
+            } else {
+                incorrectas.push({
+                    pregunta: pregunta.texto,
+                    respuestaSeleccionada,
+                    respuestaCorrecta: pregunta.respuestaCorrecta
+                });
             }
         });
-       
-        if (respuestaSeleccionada === pregunta.respuestaCorrecta) {
-            correctas++;
-        }
     });
-   
+
     const resultado = document.getElementById('resultado');
-    resultado.textContent = `Obtuviste ${correctas} de ${preguntas.length} respuestas correctas.`;
+    resultado.textContent = `Obtuviste ${correctas} de 24 respuestas correctas.`;
+
+    mostrarRespuestasIncorrectas(incorrectas);
 }
 
-// Cargar las preguntas al cargar la página
+function mostrarRespuestasIncorrectas(incorrectas) {
+    const incorrectasContainer = document.getElementById('incorrectas');
+    incorrectasContainer.innerHTML = "<h3>Respuestas Incorrectas</h3>";
+
+    incorrectas.forEach(inc => {
+        const incDiv = document.createElement('div');
+        incDiv.classList.add('incorrect-answer');
+
+        const preguntaTexto = document.createElement('p');
+        preguntaTexto.innerHTML = `<strong>Pregunta:</strong> ${inc.pregunta}`;
+       
+        const respuestaSeleccionada = document.createElement('p');
+        respuestaSeleccionada.innerHTML = `<strong>Tu respuesta:</strong> ${inc.respuestaSeleccionada || "No contestada"}`;
+       
+        const respuestaCorrecta = document.createElement('p');
+        respuestaCorrecta.innerHTML = `<strong>Respuesta correcta:</strong> ${inc.respuestaCorrecta}`;
+
+        incDiv.appendChild(preguntaTexto);
+        incDiv.appendChild(respuestaSeleccionada);
+        incDiv.appendChild(respuestaCorrecta);
+
+        incorrectasContainer.appendChild(incDiv);
+    });
+}
+
 window.onload = cargarPreguntas;
