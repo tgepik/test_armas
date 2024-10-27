@@ -427,4 +427,4 @@
 19|Consideramos que un arma ha sido inutilizada, cuando..|A) Al menos un componente esencial haya sido inutilizado.|B) Al menos dos componentes esenciales hayan sido inutilizados.|C) Cuando todos sus componentes esenciales hayan sido inutilizados.|A  
 20|¿Puede un arma de un solo tiro llevar adaptado un cargador?|A) No, nunca.|B) Sí, si solo se hace uso de tiro a tiro.|C) Dependerá del momento.|A  
 21|¿Podemos considerar como coleccionista a una persona que solo reúne componentes esenciales de las armas?|A) No, al menos debe de coleccionar un arma completa.|B) Sí, es correcto.|C) Solo en el caso de que tenga especial vocación.|A  
-22|El hecho de transformar un arma de guerra en otra civil, lo denominaremos...|A) Actividad lucrativa.|B) No está permitido.|C) Desmilitarización.|C  
+22|El hecho de transformar un arma de guerra en otra civil, lo denominaremos...|A) Actividad lucrativa.|B) No está permitido.|C) Desmilitarización.|C 
