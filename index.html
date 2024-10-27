@@ -4,70 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Test de Armas</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-        }
-        .pregunta {
-            margin-bottom: 20px;
-        }
-    </style>
 </head>
 <body>
-    <h1>Test de Armas</h1>
-    <div id="test"></div>
-    <button onclick="verificarRespuestas()">Verificar Respuestas</button>
-    <div id="resultado"></div>
-
-    <script>
-        const preguntas = [];
-       
-        // Aquí debes cargar las preguntas desde el archivo preguntas.txt
-        fetch('preguntas.txt')
-            .then(response => response.text())
-            .then(data => {
-                const lineas = data.split('\n');
-                lineas.forEach(linea => {
-                    const partes = linea.split('|');
-                    if (partes.length >= 5) {
-                        preguntas.push({
-                            pregunta: partes[0],
-                            opciones: [partes[1], partes[2], partes[3]],
-                            respuestaCorrecta: partes[4].trim()
-                        });
-                    }
-                });
-                mostrarPreguntas();
-            });
-
-        function mostrarPreguntas() {
-            const testDiv = document.getElementById('test');
-            preguntas.forEach((p, index) => {
-                const div = document.createElement('div');
-                div.className = 'pregunta';
-                div.innerHTML = `<p>${index + 1}. ${p.pregunta}</p>
-                                <label><input type="radio" name="respuesta${index}" value="A"> ${p.opciones[0]}</label><br>
-                                <label><input type="radio" name="respuesta${index}" value="B"> ${p.opciones[1]}</label><br>
-                                <label><input type="radio" name="respuesta${index}" value="C"> ${p.opciones[2]}</label><br>`;
-                testDiv.appendChild(div);
-            });
-        }
-
-        function verificarRespuestas() {
-            let aciertos = 0;
-            preguntas.forEach((p, index) => {
-                const respuestas = document.getElementsByName(`respuesta${index}`);
-                for (const respuesta of respuestas) {
-                    if (respuesta.checked) {
-                        if (respuesta.value === p.respuestaCorrecta) {
-                            aciertos++;
-                        }
-                    }
-                }
-            });
-            document.getElementById('resultado').innerHTML = `Aciertos: ${aciertos} de ${preguntas.length}`;
-        }
-    </script>
+    <h1>Test de Conocimientos sobre Armas</h1>
+    <div id="questions-container"></div>
+    <script src="script.js"></script>
 </body>
 </html>
